@@ -104,6 +104,7 @@ if (isset($id) && $a_maps[$id]) {
 	$pconfig['hostname'] = $a_maps[$id]['hostname'];
 	$pconfig['ipaddr'] = $a_maps[$id]['ipaddr'];
 	$pconfig['filename'] = $a_maps[$id]['filename'];
+	$pconfig['ipxe_filename'] = $a_maps[$id]['ipxe_filename'];
 	$pconfig['rootpath'] = $a_maps[$id]['rootpath'];
 	$pconfig['descr'] = $a_maps[$id]['descr'];
 	$pconfig['arp_table_static_entry'] = isset($a_maps[$id]['arp_table_static_entry']);
@@ -126,6 +127,7 @@ if (isset($id) && $a_maps[$id]) {
 	$pconfig['cid'] = $_GET['cid'];
 	$pconfig['hostname'] = $_GET['hostname'];
 	$pconfig['filename'] = $_GET['filename'];
+	$pconfig['ipxe_filename'] = $_GET['ipxe_filename'];
 	$pconfig['rootpath'] = $_GET['rootpath'];
 	$pconfig['descr'] = $_GET['descr'];
 	$pconfig['arp_table_static_entry'] = $_GET['arp_table_static_entry'];
@@ -280,6 +282,7 @@ if ($_POST) {
 		$mapent['descr'] = $_POST['descr'];
 		$mapent['arp_table_static_entry'] = ($_POST['arp_table_static_entry']) ? true : false;
 		$mapent['filename'] = $_POST['filename'];
+		$mapent['ipxe_filename'] = $_POST['ipxe_filename'];
 		$mapent['rootpath'] = $_POST['rootpath'];
 		$mapent['defaultleasetime'] = $_POST['deftime'];
 		$mapent['maxleasetime'] = $_POST['maxtime'];
@@ -420,6 +423,12 @@ include("head.inc");
 		  <td width="78%" class="vtable">
 		    <input name="filename" type="text" class="formfld unknown" id="filename" size="20" value="<?=htmlspecialchars($pconfig['filename']);?>" />
 		    <br /> <span class="vexpl">Name of the file that should be loaded when this host boots off of the network, overrides setting on main page.</span></td>
+		</tr>
+		<tr>
+		  <td width="22%" valign="top" class="vncell">iPXE Script Filename</td>
+		  <td width="78%" class="vtable">
+		    <input name="ipxe_filename" type="text" class="formfld unknown" id="ipxe_filename" size="20" value="<?=htmlspecialchars($pconfig['ipxe_filename']);?>" />
+		    <br /> <span class="vexpl">Name of the iPXE script file that should be loaded for user class iPXE, overrides setting on main page.</span></td>
 		</tr>
 		<tr>
 		  <td width="22%" valign="top" class="vncell">Root Path</td>

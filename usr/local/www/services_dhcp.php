@@ -160,6 +160,7 @@ if (is_array($dhcpdconf)) {
 	$pconfig['filename'] = $dhcpdconf['filename'];
 	$pconfig['filename32'] = $dhcpdconf['filename32'];
 	$pconfig['filename64'] = $dhcpdconf['filename64'];
+	$pconfig['ipxe_filename'] = $dhcpdconf['ipxe_filename'];
 	$pconfig['rootpath'] = $dhcpdconf['rootpath'];
 	$pconfig['netmask'] = $dhcpdconf['netmask'];
 	$pconfig['numberoptions'] = $dhcpdconf['numberoptions'];
@@ -470,6 +471,7 @@ if (isset($_POST['submit'])) {
 		$dhcpdconf['filename'] = $_POST['filename'];
 		$dhcpdconf['filename32'] = $_POST['filename32'];
 		$dhcpdconf['filename64'] = $_POST['filename64'];
+		$dhcpdconf['ipxe_filename'] = $_POST['ipxe_filename'];
 		$dhcpdconf['rootpath'] = $_POST['rootpath'];
 
 		// Handle the custom options rowhelper
@@ -623,6 +625,7 @@ include("head.inc");
 		document.iform.filename.disabled = endis;
 		document.iform.filename32.disabled = endis;
 		document.iform.filename64.disabled = endis;
+		document.iform.ipxe_filename.disabled = endis;
 		document.iform.rootpath.disabled = endis;
 		document.iform.denyunknown.disabled = endis;
 	}
@@ -1064,10 +1067,10 @@ include("head.inc");
 			<tr>
 			<td width="22%" valign="top" class="vncell"><?=gettext("Enable network booting");?></td>
 			<td width="78%" class="vtable">
-				<div id="shownetbootbox" <?php if ($pconfig['netboot'] || !empty($pconfig['nextserver']) || !empty($pconfig['filename']) || !empty($pconfig['filename32']) || !empty($pconfig['filename64']) || !empty($pconfig['rootpath'])) echo "style='display:none'"; ?>>
+				<div id="shownetbootbox" <?php if ($pconfig['netboot'] || !empty($pconfig['nextserver']) || !empty($pconfig['filename']) || !empty($pconfig['filename32']) || !empty($pconfig['filename64'])  || !empty($pconfig['ipxe_filename']) || !empty($pconfig['rootpath'])) echo "style='display:none'"; ?>>
 					<input type="button" onclick="show_netboot_config()" value="<?=gettext("Advanced");?>" /> - <?=gettext("Show Network booting");?>
 				</div>
-				<div id="shownetboot" <?php if (!$pconfig['netboot'] && empty($pconfig['nextserver']) && empty($pconfig['filename']) && empty($pconfig['filename32']) && empty($pconfig['filename64']) && empty($pconfig['rootpath'])) echo "style='display:none'"; ?>>
+				<div id="shownetboot" <?php if (!$pconfig['netboot'] && empty($pconfig['nextserver']) && empty($pconfig['filename']) && empty($pconfig['filename32']) && empty($pconfig['filename64']) && empty($pconfig['ipxe_filename']) && empty($pconfig['rootpath'])) echo "style='display:none'"; ?>>
 					<input style="vertical-align:middle" type="checkbox" value="yes" name="netboot" id="netboot" <?php if($pconfig['netboot']) echo " checked=\"checked\""; ?> />&nbsp;
 					<b><?=gettext("Enables network booting.");?></b>
 					<br/>
@@ -1104,9 +1107,19 @@ include("head.inc");
 								<input name="filename64" type="text" class="formfld unknown" id="filename64" size="20" value="<?=htmlspecialchars($pconfig['filename64']);?>" /><br />
 							</td>
 						</tr>
+						<tr>
+							<td>
+								<?=gettext("iPXE user class script filename  ");?>
+							</td>
+							<td>
+								<input name="ipxe_filename" type="text" class="formfld unknown" id="ipxe_filename" size="20" value="<?=htmlspecialchars($pconfig['ipxe_filename']);?>" /><br />
+							</td>
+						</tr>
 					</table>
 					<?=gettext("Note: You need both a filename and a boot server configured for this to work!");?>
 					<?=gettext("You will need all three filenames and a boot server configured for UEFI to work!");?>
+					<?=gettext("iPXE scripts get executed only for user class iPXE clients!");?>
+					<br />
 					<?=gettext("Enter the"); ?> <b><?=gettext("root-path"); ?></b>-<?=gettext("string");?>
 					<input name="rootpath" type="text" class="formfld unknown" id="rootpath" size="90" value="<?=htmlspecialchars($pconfig['rootpath']);?>" /><br />
 					<?=gettext("Note: string-format: iscsi:(servername):(protocol):(port):(LUN):targetname");?>

@@ -479,6 +479,10 @@ function services_dhcpdv4_configure() {
 
 	$dhcpdconf = <<<EOD
 
+option space ipxe;
+option ipxe-encap-opts code 175 = encapsulate ipxe;
+option ipxe.no-pxedhcp code 176 = unsigned integer 8;
+
 option domain-name "{$syscfg['domain']}";
 option ldap-server code 95 = text;
 option domain-search-list code 119 = text;
@@ -494,8 +498,10 @@ update-conflict-detection false;
 
 EOD;
 
-	if(!isset($dhcpifconf['disableauthoritative']))
+	if(!isset($dhcpifconf['disableauthoritative'])) {
 		$dhcpdconf .= "authoritative;\n";
+		$dhcpdconf .= "option ipxe.no-pxedhcp 1;\n";
+	}
 
 	if(isset($dhcpifconf['alwaysbroadcast']))
 		$dhcpdconf .= "always-broadcast on\n";
@@ -796,9 +802,17 @@ EOPP;
 				if (!empty($poolconf['nextserver']) && ($poolconf['nextserver'] != $dhcpifconf['nextserver'])) {
 					$dhcpdconf .= "		next-server {$poolconf['nextserver']};\n";
 				}
-				if (!empty($poolconf['filename']) && ($poolconf['filename'] != $dhcpifconf['filename'])) {
+
+				if (!empty($poolconf['ipxe_filename']) && !empty($poolconf['filename']) && ($poolconf['ipxe_filename'] != $dhcpifconf['ipxe_filename'] || $poolconf['filename'] != $dhcpifconf['filename'])) {
+					$dhcpdconf .= "		if exists user-class and option user-class = \"iPXE\" {\n";
+					$dhcpdconf .= "			filename \"{$poolconf['ipxe_filename']}\";\n";
+					$dhcpdconf .= "		} else {\n";
+					$dhcpdconf .= "			filename \"{$poolconf['filename']}\";\n";
+					$dhcpdconf .= "		}\n";
+				} elseif (!empty($poolconf['filename']) && ($poolconf['filename'] != $dhcpifconf['filename'])) {
 					$dhcpdconf .= "		filename \"{$poolconf['filename']}\";\n";
 				}
+
 				if (!empty($poolconf['rootpath']) && ($poolconf['rootpath'] != $dhcpifconf['rootpath'])) {
 					$dhcpdconf .= "		option root-path \"{$poolconf['rootpath']}\";\n";
 				}
@@ -866,6 +880,13 @@ EOD;
 			if ($dhcpifconf['nextserver'] <> "") {
 				$dhcpdconf .= "	next-server {$dhcpifconf['nextserver']};\n";
 			}
+
+			if (!empty($dhcpifconf['ipxe_filename']) && !empty($dhcpifconf['filename'])) {
+				$dhcpdconf .= "\n";
+				$dhcpdconf .= "	if exists user-class and option user-class = \"iPXE\" {\n";
+				$dhcpdconf .= "		filename \"{$dhcpifconf['ipxe_filename']}\";\n";
+				$dhcpdconf .= "	} else {\n";
+			}
 			if (!empty($dhcpifconf['filename']) && !empty($dhcpifconf['filename32']) && !empty($dhcpifconf['filename64'])) {
 				$dhcpdconf .= "	if option arch = 00:06 {\n";
 				$dhcpdconf .= "		filename \"{$dhcpifconf['filename32']}\";\n";
@@ -875,10 +896,14 @@ EOD;
 				$dhcpdconf .= "		filename \"{$dhcpifconf['filename64']}\";\n";
 				$dhcpdconf .= "	} else {\n";
 				$dhcpdconf .= "		filename \"{$dhcpifconf['filename']}\";\n";
-				$dhcpdconf .= "	}\n\n";
+				$dhcpdconf .= "	}\n";
 			} elseif (!empty($dhcpifconf['filename'])) {
 				$dhcpdconf .= "	filename \"{$dhcpifconf['filename']}\";\n";
 			}
+			if (!empty($dhcpifconf['ipxe_filename']) && !empty($dhcpifconf['filename'])) {
+				$dhcpdconf .= "	}\n";
+			}
+
 			if (!empty($dhcpifconf['rootpath'])) {
 				$dhcpdconf .= "	option root-path \"{$dhcpifconf['rootpath']}\";\n";
 			}
@@ -910,8 +935,16 @@ EOD;
 					$dhhostname = str_replace(".", "_", $dhhostname);
 					$dhcpdconf .= "	option host-name \"{$dhhostname}\";\n";
 				}
-				if ($sm['filename'])
+
+				if ($sm['filename'] && $sm['ipxe_filename']) {
+					$dhcpdconf .= "	if exists user-class and option user-class = \"iPXE\" {\n";
+					$dhcpdconf .= "		filename \"{$sm['ipxe_filename']}\";\n";
+					$dhcpdconf .= "	} else {\n";
+					$dhcpdconf .= "		filename \"{$sm['filename']}\";\n";
+					$dhcpdconf .= "	}\n";
+				} elseif ($sm['filename']) {
 					$dhcpdconf .= "	filename \"{$sm['filename']}\";\n";
+				}
 
 				if ($sm['rootpath'])
 					$dhcpdconf .= "	option root-path \"{$sm['rootpath']}\";\n";
